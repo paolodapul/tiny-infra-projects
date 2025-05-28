@@ -136,7 +136,7 @@ resource "aws_lb_listener" "listener" {
 # EC2 instances
 resource "aws_instance" "app" {
   count           = 2
-  ami             = "ami-0c55b159cbfafe1f0"
+  ami             = "ami-0afc7fe9be84307e4"
   instance_type   = "t2.micro"
   subnet_id       = count.index == 0 ? aws_subnet.public_a.id : aws_subnet.public_b.id
   security_groups = [aws_security_group.ec2_sg.id]
