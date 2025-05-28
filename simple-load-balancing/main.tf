@@ -140,7 +140,6 @@ resource "aws_instance" "app" {
   instance_type   = "t2.micro"
   subnet_id       = count.index == 0 ? aws_subnet.public_a.id : aws_subnet.public_b.id
   security_groups = [aws_security_group.ec2_sg.id]
-  user_data       = file("ec2_userdata.sh")
 
   tags = {
     Name = "NodeApp-${count.index}"
