@@ -133,6 +133,17 @@ resource "aws_lb_listener" "listener" {
   }
 }
 
+# SSH
+resource "tls_private_key" "ssh_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = tls_private_key.ssh_key.public_key_openssh
+}
+
 # EC2 instances
 resource "aws_instance" "app" {
   count           = 2
@@ -140,6 +151,7 @@ resource "aws_instance" "app" {
   instance_type   = "t2.micro"
   subnet_id       = count.index == 0 ? aws_subnet.public_a.id : aws_subnet.public_b.id
   security_groups = [aws_security_group.ec2_sg.id]
+  key_name        = aws_key_pair.deployer.key_name
 
   tags = {
     Name = "NodeApp-${count.index}"
@@ -156,4 +168,13 @@ resource "aws_lb_target_group_attachment" "app_attach" {
   target_group_arn = aws_lb_target_group.tg.arn
   target_id        = aws_instance.app[count.index].id
   port             = 3000
+}
+
+output "private_key_pem" {
+  value     = tls_private_key.ssh_key.private_key_pem
+  sensitive = true
+}
+
+output "instance_ips" {
+  value = [for instance in aws_instance.app : instance.public_ip]
 }
